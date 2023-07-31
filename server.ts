@@ -2,13 +2,13 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { json } from "express";
 
-
-
+import jwt from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
+import { toToken } from "./auth/jwt";
+import { AuthMiddleware, AuthRequest } from "./auth/middleware";
 
 const prisma = new PrismaClient();
 const port = 3000;
-app.use(json());
-
 
 // Create an express app
 const app = express();
@@ -16,41 +16,23 @@ const app = express();
 // Tell the app to allow json in the request body
 app.use(json());
 
-
-
-
 //get all recipe
 
-
 app.get("/recipe", async (req, res) => {
-    try {
-      let allRecipe = await prisma.recipe.findMany();
-  
-      res.status(200).send(allRecipe);
-    } catch (error) {
-      res.status(500).send({ message: "Something went wrong!" });
-    }
-  });
+  try {
+    let allRecipe = await prisma.recipe.findMany();
 
+    res.status(200).send(allRecipe);
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong!" });
+  }
+});
 
 //create a recipe
-
-
 
 //update a recipe
 
 //add comments
-
-
-
-app.post("/recipe",)
-
-
-import jwt from "jsonwebtoken";
-import { JwtPayload } from "jsonwebtoken";
-import { toToken } from "./auth/jwt";
-
-
 
 // Your routes go underneath here
 
@@ -105,7 +87,59 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-console.log(`⚡ Server listening on port: ${port}`);
+//create-recipe
+
+app.post("/create-recipe", AuthMiddleware, async (req: AuthRequest, res) => {
+  const {
+    name,
+    category,
+    img_url,
+    instructions,
+    ingredients,
+    prep_time,
+    serves,
+  } = req.body;
+
+  const userIdThatMadeTheRequest = Number(req.userId);
+
+  // This check here makes sure we have the userId on the request
+  if (!req.userId) {
+    res.status(500).send("Something went wrong");
+    return;
+  }
+
+  if ("message" in req.body) {
+    try {
+      await prisma.recipe.create({
+        data: {
+          name,
+          img_url,
+          instructions,
+          ingredients,
+          prep_time,
+          serves,
+          category,
+          user: {
+            connect: {
+              id: userIdThatMadeTheRequest,
+            },
+          },
+         
+          
+        },
+      });
+      res.status(201).send({ message: "Post created!" });
+    } catch (error) {
+      res.status(500).send({ message: "Something went wrong!" });
+    }
+  } else {
+    res.status(400).send({ message: "'message' and 'userId' are required!" });
+  }
 });
 
+
+
+
+app.listen(port, () => {
+  console.log(`⚡ Server listening on port: ${port}`);
+});
