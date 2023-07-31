@@ -1,9 +1,14 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { json } from "express";
-import jwt from "jsonwebtoken";
-import { JwtPayload } from "jsonwebtoken";
-import { toToken } from "./auth/jwt";
+
+
+
+
+const prisma = new PrismaClient();
+const port = 3000;
+app.use(json());
+
 
 // Create an express app
 const app = express();
@@ -11,10 +16,41 @@ const app = express();
 // Tell the app to allow json in the request body
 app.use(json());
 
-const port = 3000;
 
-// Create a prisma client
-const prisma = new PrismaClient();
+
+
+//get all recipe
+
+
+app.get("/recipe", async (req, res) => {
+    try {
+      let allRecipe = await prisma.recipe.findMany();
+  
+      res.status(200).send(allRecipe);
+    } catch (error) {
+      res.status(500).send({ message: "Something went wrong!" });
+    }
+  });
+
+
+//create a recipe
+
+
+
+//update a recipe
+
+//add comments
+
+
+
+app.post("/recipe",)
+
+
+import jwt from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
+import { toToken } from "./auth/jwt";
+
+
 
 // Your routes go underneath here
 
@@ -69,4 +105,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.listen(port);
+app.listen(port, () => {
+console.log(`⚡ Server listening on port: ${port}`);
+});
+
