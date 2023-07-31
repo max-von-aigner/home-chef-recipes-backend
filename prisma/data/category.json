@@ -1,17 +1,22 @@
 [
-    {
-      "id": 1,
-      "name": "breakfast",
-      "emoji": ""
-    },
-    {
-      "id": 2,
-      "name": "lunch",
-      "emoji": ""
-    },
-    {
-      "id": 3,
-      "name": "dinner",
-      "emoji": ""
-    }
-  ]
+  {
+    "id": 1,
+    "name": "breakfast",
+    "emoji": "🍳"
+  },
+  {
+    "id": 2,
+    "name": "lunch",
+    "emoji": "🥯"
+  },
+  {
+    "id": 3,
+    "name": "dinner",
+    "emoji": "🥘"
+  },
+  {
+    "id": 4,
+    "name": "dessert",
+    "emoji": "🧁"
+  }
+]
