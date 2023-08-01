@@ -1,6 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { json } from "express";
+const cors = require("cors");
 
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
@@ -15,26 +16,23 @@ const app = express();
 
 // Tell the app to allow json in the request body
 app.use(json());
+app.use(cors());
 
 //get all recipe
 
 app.get("/recipe", async (req, res) => {
   try {
-    let allRecipe = await prisma.recipe.findMany();
+    let allRecipe = await prisma.recipe.findMany({
+      include: {
+        category: true,
+      },
+    });
 
     res.status(200).send(allRecipe);
   } catch (error) {
     res.status(500).send({ message: "Something went wrong!" });
   }
 });
-
-//create a recipe
-
-//update a recipe
-
-//add comments
-
-// Your routes go underneath here
 
 // Sign-up endpoint 👇🏻
 app.post("/sign_up", async (req, res) => {
@@ -124,8 +122,6 @@ app.post("/create-recipe", AuthMiddleware, async (req: AuthRequest, res) => {
               id: userIdThatMadeTheRequest,
             },
           },
-         
-          
         },
       });
       res.status(201).send({ message: "Post created!" });
@@ -137,8 +133,21 @@ app.post("/create-recipe", AuthMiddleware, async (req: AuthRequest, res) => {
   }
 });
 
+//get-category
 
+app.get("/category", async (req, res) => {
+  try {
+    let allCategory = await prisma.category.findMany({
+      include: {
+        recipe: true,
+      },
+    });
 
+    res.status(200).send(allCategory);
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong!" });
+  }
+});
 
 app.listen(port, () => {
   console.log(`⚡ Server listening on port: ${port}`);

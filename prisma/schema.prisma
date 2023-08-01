@@ -26,24 +26,24 @@ model Recipe {
   prep_time    Int
   serves       Int
   category     Category[]
-  userId       Int 
+  userId       Int
   user         User       @relation(fields: [userId], references: [id])
   comment      Comment[]
 }
 
 model Category {
-  id      Int      @id @default(autoincrement())
-  name    String
+  id     Int      @id @default(autoincrement())
+  name   String
   emoji  String
-  recipe  Recipe[]
+  recipe Recipe[]
 }
 
 model Comment {
-  id       Int    @id @default(autoincrement())
-  name     String
-  rating   Int
-  message   String
-  created_at  DateTime @default(now())
-  Recipe   Recipe @relation(fields: [recipeId], references: [id])
-  recipeId Int
+  id         Int      @id @default(autoincrement())
+  name       String
+  rating     Int
+  message    String
+  created_at DateTime @default(now())
+  Recipe     Recipe   @relation(fields: [recipeId], references: [id])
+  recipeId   Int
 }
