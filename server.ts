@@ -152,3 +152,30 @@ app.get("/category", async (req, res) => {
 app.listen(port, () => {
   console.log(`⚡ Server listening on port: ${port}`);
 });
+
+//get-recipe-by-id
+
+app.get("/recipe/:id", async (req, res) => {
+  const idAsNumber = parseInt(req.params.id);
+
+  try {
+    const a_recipe = await prisma.recipe.findUnique({
+      where: {
+        id: idAsNumber,
+      },
+      include: {
+        comment: true,
+      },
+    });
+
+    if (!a_recipe) {
+      res.status(404).send({
+        message: "Recipe with that id not found",
+      });
+    }
+
+    res.send(a_recipe);
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong!" });
+  }
+});
