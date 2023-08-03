@@ -25,6 +25,7 @@ app.get("/recipe", async (req, res) => {
     let allRecipe = await prisma.recipe.findMany({
       include: {
         category: true,
+        comment: true,
       },
     });
 
