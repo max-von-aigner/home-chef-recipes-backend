@@ -167,6 +167,7 @@ app.get("/recipe/:id", async (req, res) => {
       },
       include: {
         comment: true,
+        category: true,
       },
     });
 
@@ -185,3 +186,22 @@ app.get("/recipe/:id", async (req, res) => {
 //get detail for dashboard
 
 app.get("/dashboard", async (req, res) => {});
+
+//add comment to recipe
+
+app.post("/comments/:id", async (req, res) => {
+  // Here we can write our functionality
+  console.log(req.params);
+  const recipeId = Number(req.params.id);
+  if ("name" in req.body && "rating" in req.body && "message" in req.body) {
+    // // SUCCESS
+    await prisma.comment.create({
+      data: {
+        name: req.body.name,
+        rating: Number(req.body.rating),
+        message: req.body.message,
+        recipeId: recipeId,
+      },
+    });
+  }
+});
