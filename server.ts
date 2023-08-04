@@ -167,6 +167,7 @@ app.get("/recipe/:id", async (req, res) => {
       },
       include: {
         comment: true,
+        category: true,
       },
     });
 
@@ -183,6 +184,26 @@ app.get("/recipe/:id", async (req, res) => {
 });
 
 //get detail for dashboard
+
+
+app.get("/dashboard", async (req, res) => {});
+
+//add comment to recipe
+
+app.post("/comments/:id", async (req, res) => {
+  // Here we can write our functionality
+  console.log(req.params);
+  const recipeId = Number(req.params.id);
+  if ("name" in req.body && "rating" in req.body && "message" in req.body) {
+    // // SUCCESS
+    await prisma.comment.create({
+      data: {
+        name: req.body.name,
+        rating: Number(req.body.rating),
+        message: req.body.message,
+        recipeId: recipeId,
+      },
+    });
 
 app.get("/dashboard", AuthMiddleware, async (req: AuthRequest, res) => {
   const userIdThatMadeTheRequest = Number(req.userId);
@@ -215,5 +236,6 @@ app.get("/edit/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching/editing recipe:", error);
     res.status(500).send({ message: "Something went wrong!" });
+
   }
 });
