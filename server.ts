@@ -89,17 +89,10 @@ app.post("/login", async (req, res) => {
 //create-recipe
 
 app.post("/create-recipe", AuthMiddleware, async (req: AuthRequest, res) => {
-  const {
-    name,
-    category,
-    img_url,
-    instructions,
-    ingredients,
-    prep_time,
-    serves,
-  } = req.body;
-
-  const userIdThatMadeTheRequest = Number(req.userId);
+  if (!req.userId) {
+    res.status(500).send("Something went wrong");
+    return;
+  }
 
   // This check here makes sure we have the userId on the request
   if (!req.userId) {
@@ -107,30 +100,38 @@ app.post("/create-recipe", AuthMiddleware, async (req: AuthRequest, res) => {
     return;
   }
 
-  if ("message" in req.body) {
+  if (
+    "name" in req.body &&
+    "instructions" in req.body &&
+    "ingredients" in req.body &&
+    "prep_time" in req.body &&
+    "category" in req.body &&
+    "serves" in req.body &&
+    "img_url" in req.body
+  ) {
+    const userIdThatMadeTheRequest = Number(req.userId);
     try {
       await prisma.recipe.create({
         data: {
-          name,
-          img_url,
-          instructions,
-          ingredients,
-          prep_time,
-          serves,
-          category,
-          user: {
-            connect: {
-              id: userIdThatMadeTheRequest,
-            },
+          userId: userIdThatMadeTheRequest,
+          name: req.body.name,
+          img_url: req.body.img_url,
+          instructions: req.body.instructions,
+          ingredients: req.body.ingredients,
+          prep_time: Number(req.body.prep_time),
+          serves: Number(req.body.serves),
+          category: {
+            connect: req.body.category,
           },
         },
       });
       res.status(201).send({ message: "Post created!" });
     } catch (error) {
+      console.log(error);
       res.status(500).send({ message: "Something went wrong!" });
     }
   } else {
-    res.status(400).send({ message: "'message' and 'userId' are required!" });
+    res.status(400).send({ message: "All fields are required" });
   }
 });
 
@@ -180,3 +181,7 @@ app.get("/recipe/:id", async (req, res) => {
     res.status(500).send({ message: "Something went wrong!" });
   }
 });
+
+//get detail for dashboard
+
+app.get("/dashboard", async (req, res) => {});
