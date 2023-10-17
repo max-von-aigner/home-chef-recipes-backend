@@ -2,7 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { json } from "express";
 const cors = require("cors");
-
+import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 import { toToken } from "./auth/jwt";
@@ -35,24 +35,41 @@ app.get("/recipe", async (req, res) => {
   }
 });
 
-// Sign-up endpoint 👇🏻
-app.post("/sign_up", async (req, res) => {
+app.post("/register", async (req, res) => {
   const requestBody = req.body;
-  if ("username" in requestBody && "password" in requestBody) {
+
+  //Zod validator for user registration
+  const userValidator = z
+    .object({
+      username: z.string().min(5),
+      password: z.string().min(10),
+    })
+    .strict();
+
+  const parsedBody = userValidator.safeParse(requestBody);
+
+  if (parsedBody.success === true) {
     try {
-      await prisma.user.create({
+      const existingUser = await prisma.user.findUnique({
+        where: {
+          username: requestBody.username,
+        },
+      });
+
+      if (existingUser) {
+        res.status(400).send("Please try a different username");
+        return;
+      }
+
+      const newUser = await prisma.user.create({
         data: requestBody,
       });
-      res.status(201).send({ message: "User created!" });
+      res.status(201).send("Created a new user");
     } catch (error) {
-      // If we get an error, send back HTTP 500 (Server Error)
-      res.status(500).send({ message: "Something went wrong!" });
+      res.status(500).send({ message: "Something went wrong!", error });
     }
   } else {
-    // If we are missing fields, send back a HTTP 400
-    res
-      .status(400)
-      .send({ message: "'username' and 'password' are required!" });
+    res.status(400).send(parsedBody.error.flatten());
   }
 });
 
@@ -183,11 +200,6 @@ app.get("/recipe/:id", async (req, res) => {
   }
 });
 
-//get detail for dashboard
-
-
-app.get("/dashboard", async (req, res) => {});
-
 //add comment to recipe
 
 app.post("/comments/:id", async (req, res) => {
@@ -204,6 +216,8 @@ app.post("/comments/:id", async (req, res) => {
         recipeId: recipeId,
       },
     });
+  }
+});
 
 app.get("/dashboard", AuthMiddleware, async (req: AuthRequest, res) => {
   const userIdThatMadeTheRequest = Number(req.userId);
@@ -219,8 +233,9 @@ app.get("/dashboard", AuthMiddleware, async (req: AuthRequest, res) => {
 //pactch request
 
 app.get("/edit/:id", async (req, res) => {
+  console.log(req.params);
   const idAsNumber = parseInt(req.params.id);
-
+  console.log(idAsNumber);
   try {
     const a_recipe = await prisma.recipe.findUnique({
       where: {
@@ -228,6 +243,7 @@ app.get("/edit/:id", async (req, res) => {
       },
     });
 
+    console.log(a_recipe);
     if (!a_recipe) {
       return res.status(404).send({ error: "Recipe not found" });
     }
@@ -236,6 +252,5 @@ app.get("/edit/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching/editing recipe:", error);
     res.status(500).send({ message: "Something went wrong!" });
-
   }
 });
